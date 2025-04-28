@@ -35,6 +35,11 @@ public class CustomerServiceImpl implements CustomerService {
                   AND (:fromDate IS NULL OR registration_date >= ?)
                   AND (:toDate IS NULL OR registration_date <= ?)
                 """;
+    private static final  Map<String, String> FORMAT_TO_FILENAME = Map.of(
+            "pdf", "customer_report.pdf",
+            "excel", "customer_report.xlsx",
+            "csv", "customer_report.csv"
+    );
 
     @Override
     public List<CustomerResponse> getAllCustomers() {
@@ -106,13 +111,11 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public StreamingResponseBody exportCustomerReportAsZip(DynamicQueryRequest queryRequest) {
-        Map<String, String> formatToFilename = Map.of(
-                "pdf", "customer_report.pdf",
-                "excel", "customer_report.xlsx",
-                "csv", "customer_report.csv"
-        );
 
-        return dynamicReportService.generateReportZip(formatToFilename, customerReportQueryProvider, queryRequest);
+
+        return dynamicReportService.generateReportZip(FORMAT_TO_FILENAME, customerReportQueryProvider, queryRequest);
     }
+
+
 
 }

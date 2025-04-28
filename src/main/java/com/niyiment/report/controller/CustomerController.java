@@ -39,7 +39,7 @@ public class CustomerController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(customerService.exportCustomerReportAsZip(filters));
+                .body(customerService.exportCustomerReportAsZip(queryRequest));
     }
 
     @PostMapping("/export/{format}")
@@ -51,7 +51,7 @@ public class CustomerController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
                 .contentType(getContentType(format))
-                .body(customerService.exportCustomerReport(format, filters));
+                .body(customerService.exportCustomerReport(format, queryRequest));
     }
 
     private static class CustomerRowMapper implements RowMapper<Customer> {
