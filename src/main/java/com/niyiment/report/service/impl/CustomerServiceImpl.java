@@ -3,6 +3,7 @@ package com.niyiment.report.service.impl;
 import com.github.javafaker.Faker;
 import com.niyiment.report.dto.CustomerRequest;
 import com.niyiment.report.dto.CustomerResponse;
+import com.niyiment.report.dto.DynamicQueryRequest;
 import com.niyiment.report.model.Customer;
 import com.niyiment.report.query.CustomerReportQueryProvider;
 import com.niyiment.report.repository.CustomerRepository;
@@ -34,8 +35,6 @@ public class CustomerServiceImpl implements CustomerService {
                   AND (:fromDate IS NULL OR registration_date >= ?)
                   AND (:toDate IS NULL OR registration_date <= ?)
                 """;
-
-
 
     @Override
     public List<CustomerResponse> getAllCustomers() {
@@ -101,19 +100,19 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public StreamingResponseBody exportCustomerReport(String format, Map<String, Object> filters) {
-        return dynamicReportService.generateReport(format, customerReportQueryProvider, filters);
+    public StreamingResponseBody exportCustomerReport(String format, DynamicQueryRequest queryRequest) {
+        return dynamicReportService.generateReport(format, customerReportQueryProvider, queryRequest);
     }
 
     @Override
-    public StreamingResponseBody exportCustomerReportAsZip(Map<String, Object> filters) {
+    public StreamingResponseBody exportCustomerReportAsZip(DynamicQueryRequest queryRequest) {
         Map<String, String> formatToFilename = Map.of(
                 "pdf", "customer_report.pdf",
                 "excel", "customer_report.xlsx",
                 "csv", "customer_report.csv"
         );
 
-        return dynamicReportService.generateReportZip(formatToFilename, customerReportQueryProvider, filters);
+        return dynamicReportService.generateReportZip(formatToFilename, customerReportQueryProvider, queryRequest);
     }
 
 }

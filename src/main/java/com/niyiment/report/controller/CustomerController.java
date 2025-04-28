@@ -2,6 +2,7 @@ package com.niyiment.report.controller;
 
 import com.niyiment.report.dto.CustomerRequest;
 import com.niyiment.report.dto.CustomerResponse;
+import com.niyiment.report.dto.DynamicQueryRequest;
 import com.niyiment.report.model.Customer;
 import com.niyiment.report.service.CustomerService;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -30,8 +32,9 @@ public class CustomerController {
     private final JdbcTemplate jdbcTemplate;
 
     @PostMapping("/export-zip")
-    public ResponseEntity<StreamingResponseBody> downloadCustomerReportsZip(@RequestBody Map<String, Object> filters) {
-        String filename = "customer_reports_" + LocalDate.now() + ".zip";
+    public ResponseEntity<StreamingResponseBody> downloadCustomerReportsZip(@RequestBody DynamicQueryRequest queryRequest) {
+        String strDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String filename = "customer_reports_" + strDate + ".zip";
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
@@ -41,8 +44,9 @@ public class CustomerController {
 
     @PostMapping("/export/{format}")
     public ResponseEntity<StreamingResponseBody> downloadCustomerReport(@PathVariable String format,
-                                                                        @RequestBody Map<String, Object> filters) {
-        String filename = "customer_report_" + LocalDate.now() + "." + format;
+                                                                        @RequestBody DynamicQueryRequest queryRequest) {
+        String strDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String filename = "customer_report_" + strDate + "." + format;
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")

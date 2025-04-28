@@ -1,5 +1,6 @@
 package com.niyiment.report.query;
 
+import com.niyiment.report.dto.DynamicQueryRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -14,17 +15,23 @@ import java.util.Map;
 @Component
 public class CustomerReportQueryProvider  implements QueryProvider {
     @Override
-    public String buildQuery(Map<String, Object> filters) {
+    public String buildQuery(DynamicQueryRequest request) {
         StringBuilder query = new StringBuilder("SELECT name, email, phone, registration_date FROM customers WHERE 1=1");
 
-        if (filters.containsKey("startDate")) {
-            query.append(" AND registration_date >= :startDate");
-        }
-        if (filters.containsKey("endDate")) {
-            query.append(" AND registration_date <= :endDate");
-        }
-        if (filters.containsKey("name")) {
-            query.append(" AND LOWER(name) LIKE LOWER(:name)");
+       if (request.getFilters() != null) {
+           if (request.getFilters().containsKey("startDate")) {
+               query.append(" AND registration_date >= :startDate");
+           }
+           if (request.getFilters().containsKey("endDate")) {
+               query.append(" AND registration_date <= :endDate");
+           }
+           if (request.getFilters().containsKey("name")) {
+               query.append(" AND LOWER(name) LIKE LOWER(:name)");
+           }
+       }
+
+        if (request.getSortBy() != null && request.getSortDirection() != null) {
+            query.append(" ORDER BY ").append(request.getSortBy()).append(" ").append(request.getSortDirection());
         }
 
         return query.toString();
@@ -32,34 +39,36 @@ public class CustomerReportQueryProvider  implements QueryProvider {
 
 
     @Override
-    public Map<String, Object> getQueryParams(Map<String, Object> filters) {
+    public Map<String, Object> getQueryParams(DynamicQueryRequest request) {
         Map<String, Object> params = new HashMap<>();
-        if (filters.containsKey("startDate")) {
-            try {
-                String startDateStr = (String) filters.get("startDate");
-                LocalDate startDate = LocalDate.parse(startDateStr);
-                params.put("startDate", Date.valueOf(startDate));
-            } catch (DateTimeParseException e) {
-                log.error("Invalid startDate format: {}", filters.get("startDate"));
-                throw new IllegalArgumentException("Invalid startDate format");
+        if (request.getFilters() != null) {
+            if (request.getFilters().containsKey("startDate")) {
+                try {
+                    String startDateStr = (String) request.getFilters().get("startDate");
+                    LocalDate startDate = LocalDate.parse(startDateStr);
+                    params.put("startDate", Date.valueOf(startDate));
+                } catch (DateTimeParseException e) {
+                    log.error("Invalid startDate format: {}", request.getFilters().get("startDate"));
+                    throw new IllegalArgumentException("Invalid startDate format");
+                }
             }
-        }
-        if (filters.containsKey("endDate")) {
-            try {
-                String endDateStr = (String) filters.get("endDate");
-                LocalDate endDate = LocalDate.parse(endDateStr);
-                params.put("endDate", Date.valueOf(endDate));
-            } catch (DateTimeParseException e) {
-                log.error("Invalid endDate format: {}", filters.get("startDate"));
-                throw new IllegalArgumentException("Invalid startDate format");
+            if (request.getFilters().containsKey("endDate")) {
+                try {
+                    String endDateStr = (String) request.getFilters().get("endDate");
+                    LocalDate endDate = LocalDate.parse(endDateStr);
+                    params.put("endDate", Date.valueOf(endDate));
+                } catch (DateTimeParseException e) {
+                    log.error("Invalid endDate format: {}", request.getFilters().get("startDate"));
+                    throw new IllegalArgumentException("Invalid startDate format");
+                }
             }
-        }
-        if (filters.containsKey("name")) {
-            params.put("name", "%" + filters.get("name") + "%");
-        }
+            if (request.getFilters().containsKey("name")) {
+                params.put("name", "%" + request.getFilters().get("name") + "%");
+            }
 
-        if (params.isEmpty()) {
-            log.warn("No filters provided; query will return all customers");
+            if (params.isEmpty()) {
+                log.warn("No filters provided; query will return all customers");
+            }
         }
 
         return params;
